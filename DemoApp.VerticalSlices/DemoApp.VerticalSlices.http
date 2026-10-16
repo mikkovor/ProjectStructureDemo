@@ -1,0 +1,6 @@
+@DemoApp.VerticalSlices_HostAddress = http://localhost:5010
+
+GET {{DemoApp.VerticalSlices_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

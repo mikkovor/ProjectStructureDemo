@@ -1,3 +1,10 @@
 <Solution>
-  <Project Path="DemoApp.API/DemoApp.API.csproj" />
+  <Project Path="ArchitectureDemo.Tests/ArchitectureDemo.Tests.csproj" />
+  <Project Path="DemoApp.CleanArchitecture.Api/DemoApp.CleanArchitecture.Api.csproj" />
+  <Project Path="DemoApp.CleanArchitecture.Application/DemoApp.CleanArchitecture.Application.csproj" />
+  <Project Path="DemoApp.CleanArchitecture.Domain/DemoApp.CleanArchitecture.Domain.csproj" />
+  <Project Path="DemoApp.CleanArchitecture.Infrastructure/DemoApp.CleanArchitecture.Infrastructure.csproj" />
+  <Project Path="DemoApp.Layered/DemoApp.Layered.csproj" />
+  <Project Path="DemoApp.VerticalSlices.SingleFile/DemoApp.VerticalSlices.SingleFile.csproj" />
+  <Project Path="DemoApp.VerticalSlices/DemoApp.VerticalSlices.csproj" />
 </Solution>

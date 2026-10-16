@@ -1,4 +1,4 @@
-namespace DemoApp.API
+namespace DemoApp.Layered
 {
     public class WeatherForecast
     {

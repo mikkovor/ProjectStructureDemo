@@ -1,0 +1,6 @@
+@DemoApp.Layered_HostAddress = http://localhost:5294
+
+GET {{DemoApp.Layered_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
