@@ -1,39 +1,36 @@
-var builder = WebApplication.CreateBuilder(args);
+using DemoApp.VerticalSlices.Features.Products.CreateProduct;
+using DemoApp.VerticalSlices.Features.Products.GetProductById;
+using DemoApp.VerticalSlices.Features.Products.GetProducts;
+using DemoApp.VerticalSlices.Products;
+using FluentValidation;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+namespace DemoApp.VerticalSlices
 {
-    app.MapOpenApi();
-}
+    public partial class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+            builder.Services.AddOpenApi();
+            builder.Services.AddSingleton<IValidator<GetProductsRequest>, GetProductsValidator>();
+            builder.Services.AddSingleton<IValidator<CreateProductRequest>, CreateProductValidator>();
+            builder.Services.AddSingleton<IProductRepository, InMemoryProductRepository>();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+            var app = builder.Build();
 
-app.Run();
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapOpenApi();
+            }
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+            app.UseHttpsRedirection();
+
+            app.MapGetProducts();
+            app.MapGetProductById();
+            app.MapCreateProduct();
+
+            app.Run();
+        }
+    }
 }

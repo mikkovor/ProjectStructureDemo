@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DemoApp.Layered\DemoApp.Layered.csproj" />
+    <ProjectReference Include="..\DemoApp.VerticalSlices\DemoApp.VerticalSlices.csproj" />
   </ItemGroup>
 
 </Project>
