@@ -12,7 +12,8 @@ namespace DemoApp.Layered
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(options =>
+                options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
             builder.Services.AddOpenApi();
             builder.Services.AddSingleton<IValidator<GetProductsQuery>, GetProductsQueryValidator>();
             builder.Services.AddSingleton<IValidator<CreateProductRequest>, CreateProductRequestValidator>();

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 
 namespace ArchitectureDemo.Tests;
 
@@ -63,11 +64,18 @@ public static class ProductApiContract
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/products", new { name = "", price = 0m })).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/products", new { name = new string('x', 101), price = 12.50m })).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/products", new { name = "Invalid price", price = 0m })).StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/products", new { price = 12.50m })).StatusCode);
+
+        var missingName = await client.PostAsJsonAsync("/products", new { price = 12.50m });
+        Assert.Equal(HttpStatusCode.BadRequest, missingName.StatusCode);
+        using (var problem = await JsonDocument.ParseAsync(await missingName.Content.ReadAsStreamAsync()))
+        {
+            var nameErrors = problem.RootElement.GetProperty("errors").GetProperty("Name");
+            Assert.Contains("'Name' must not be empty.", nameErrors.EnumerateArray().Select(error => error.GetString()));
+        }
+
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsync("/products", new StringContent("{", Encoding.UTF8, "application/json"))).StatusCode);
 
         var after = await client.GetFromJsonAsync<List<ProductResponse>>("/products");
         Assert.Equal(before, after);
     }
 }
-
