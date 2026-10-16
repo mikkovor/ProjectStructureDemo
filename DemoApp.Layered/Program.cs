@@ -17,6 +17,7 @@ namespace DemoApp.Layered
             builder.Services.AddOpenApi();
             builder.Services.AddSingleton<IValidator<GetProductsQuery>, GetProductsQueryValidator>();
             builder.Services.AddSingleton<IValidator<CreateProductRequest>, CreateProductRequestValidator>();
+            builder.Services.AddSingleton<IValidator<ChangePriceRequest>, ChangePriceRequestValidator>();
             builder.Services.AddSingleton<IProductRepository, InMemoryProductRepository>();
             builder.Services.AddScoped<IProductService, ProductService>();
 

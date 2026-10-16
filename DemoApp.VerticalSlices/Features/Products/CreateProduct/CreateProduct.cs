@@ -1,29 +1,22 @@
-using DemoApp.VerticalSlices.Features.Products.GetProductById;
-using DemoApp.VerticalSlices.Products;
-using FluentValidation;
+using DemoApp.VerticalSlices.Data;
+using DemoApp.VerticalSlices.Domain;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace DemoApp.VerticalSlices.Features.Products.CreateProduct;
 
 public static class CreateProduct
 {
-    public static void MapCreateProduct(this IEndpointRouteBuilder app) =>
-        app.MapPost("/products", HandleAsync).WithName("CreateProduct");
+    public static void MapCreateProduct(this IEndpointRouteBuilder group) =>
+        group.MapPost("/", HandleAsync).WithName("CreateProduct");
 
-    private static async Task<Results<CreatedAtRoute<CreateProductResponse>, ValidationProblem>> HandleAsync(
+    private static async Task<CreatedAtRoute<CreateProductResponse>> HandleAsync(
         CreateProductRequest request,
-        IValidator<CreateProductRequest> validator,
-        IProductRepository repository,
+        ProductStore store,
         CancellationToken cancellationToken)
     {
-        var validation = await validator.ValidateAsync(request, cancellationToken);
-        if (!validation.IsValid)
-        {
-            return TypedResults.ValidationProblem(validation.ToDictionary());
-        }
-
-        var product = await repository.AddAsync(request.Name, request.Price, cancellationToken);
+        var product = Product.Create(request.Name, request.Price);
+        await store.AddAsync(product, cancellationToken);
         var response = new CreateProductResponse(product.Id, product.Name, product.Price);
-        return TypedResults.CreatedAtRoute(response, "GetProductById", new { id = product.Id });
+        return TypedResults.CreatedAtRoute(response, GetProductById.GetProductById.EndpointName, new { id = product.Id });
     }
 }

@@ -1,3 +1,4 @@
+using DemoApp.Layered.DTOs;
 using FluentValidation;
 
 namespace DemoApp.Layered.Validators;

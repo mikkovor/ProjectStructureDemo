@@ -1,6 +1,52 @@
-@DemoApp.VerticalSlices_HostAddress = http://localhost:5010
+@HostAddress = http://localhost:5010
+@ChairId = 22222222-2222-2222-2222-222222222222
 
-GET {{DemoApp.VerticalSlices_HostAddress}}/weatherforecast/
+### List products
+GET {{HostAddress}}/products
 Accept: application/json
 
-###
+### Search with page size
+GET {{HostAddress}}/products?search=demo&pageSize=1
+Accept: application/json
+
+### Invalid page size (400)
+GET {{HostAddress}}/products?pageSize=0
+Accept: application/json
+
+### Get product by id
+GET {{HostAddress}}/products/{{ChairId}}
+Accept: application/json
+
+### Create product (201)
+POST {{HostAddress}}/products
+Content-Type: application/json
+
+{
+  "name": "New product",
+  "price": 12.50
+}
+
+### Create invalid product (400)
+POST {{HostAddress}}/products
+Content-Type: application/json
+
+{
+  "name": "",
+  "price": 0
+}
+
+### Change price within the +50% limit (200)
+PUT {{HostAddress}}/products/{{ChairId}}/price
+Content-Type: application/json
+
+{
+  "price": 199.00
+}
+
+### Change price above the +50% limit (422)
+PUT {{HostAddress}}/products/{{ChairId}}/price
+Content-Type: application/json
+
+{
+  "price": 999.00
+}

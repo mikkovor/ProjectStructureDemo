@@ -1,28 +1,19 @@
-using DemoApp.VerticalSlices.Products;
-using FluentValidation;
+using DemoApp.VerticalSlices.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 
 namespace DemoApp.VerticalSlices.Features.Products.GetProducts;
 
 public static class GetProducts
 {
-    public static void MapGetProducts(this IEndpointRouteBuilder app) =>
-        app.MapGet("/products", HandleAsync).WithName("GetProducts");
+    public static void MapGetProducts(this IEndpointRouteBuilder group) =>
+        group.MapGet("/", HandleAsync).WithName("GetProducts");
 
-    private static async Task<Results<Ok<IReadOnlyList<GetProductsResponse>>, ValidationProblem>> HandleAsync(
+    private static async Task<Ok<IReadOnlyList<GetProductsResponse>>> HandleAsync(
         [AsParameters] GetProductsRequest request,
-        IValidator<GetProductsRequest> validator,
-        IProductRepository repository,
+        ProductStore store,
         CancellationToken cancellationToken)
     {
-        var validation = await validator.ValidateAsync(request, cancellationToken);
-        if (!validation.IsValid)
-        {
-            return TypedResults.ValidationProblem(validation.ToDictionary());
-        }
-
-        var products = await repository.GetAllAsync(request.Search, request.PageSize, cancellationToken);
+        var products = await store.GetAllAsync(request.Search, request.PageSize, cancellationToken);
         IReadOnlyList<GetProductsResponse> response = products
             .Select(p => new GetProductsResponse(p.Id, p.Name, p.Price))
             .ToList();

@@ -1,6 +1,5 @@
 using DemoApp.Layered.DTOs;
 using DemoApp.Layered.Services;
-using DemoApp.Layered.Validators;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +10,8 @@ namespace DemoApp.Layered.Controllers;
 public sealed class ProductsController(
     IProductService service,
     IValidator<GetProductsQuery> queryValidator,
-    IValidator<CreateProductRequest> createValidator) : ControllerBase
+    IValidator<CreateProductRequest> createValidator,
+    IValidator<ChangePriceRequest> changePriceValidator) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<ProductResponse>>> GetAll(
@@ -44,6 +44,27 @@ public sealed class ProductsController(
 
         var created = await service.CreateAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+    }
+
+    [HttpPut("{id:guid}/price")]
+    public async Task<ActionResult<ProductResponse>> ChangePrice(Guid id, ChangePriceRequest request, CancellationToken cancellationToken)
+    {
+        var validation = await changePriceValidator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+        {
+            return ValidationProblem(validation);
+        }
+
+        var result = await service.ChangePriceAsync(id, request, cancellationToken);
+        return result.Status switch
+        {
+            ChangePriceStatus.Changed => Ok(result.Product),
+            ChangePriceStatus.NotFound => NotFound(),
+            _ => Problem(
+                title: "Price increase too large",
+                detail: "A price may not be increased by more than 50% at once.",
+                statusCode: StatusCodes.Status422UnprocessableEntity)
+        };
     }
 
     private ActionResult ValidationProblem(FluentValidation.Results.ValidationResult validation)

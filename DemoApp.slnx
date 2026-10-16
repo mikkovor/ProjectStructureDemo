@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
   <Project Path="ArchitectureDemo.Tests/ArchitectureDemo.Tests.csproj" />
   <Project Path="DemoApp.CleanArchitecture.Api/DemoApp.CleanArchitecture.Api.csproj" />
   <Project Path="DemoApp.CleanArchitecture.Application/DemoApp.CleanArchitecture.Application.csproj" />

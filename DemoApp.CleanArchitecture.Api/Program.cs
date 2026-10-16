@@ -1,6 +1,7 @@
 using DemoApp.CleanArchitecture.Api.Endpoints;
 using DemoApp.CleanArchitecture.Api.Requests;
 using DemoApp.CleanArchitecture.Application.Abstractions;
+using DemoApp.CleanArchitecture.Application.Products.ChangePrice;
 using DemoApp.CleanArchitecture.Application.Products.CreateProduct;
 using DemoApp.CleanArchitecture.Application.Products.GetProductById;
 using DemoApp.CleanArchitecture.Application.Products.GetProducts;
@@ -18,10 +19,12 @@ namespace DemoApp.CleanArchitecture.Api
             builder.Services.AddOpenApi();
             builder.Services.AddSingleton<IValidator<GetProductsRequest>, GetProductsRequestValidator>();
             builder.Services.AddSingleton<IValidator<CreateProductRequest>, CreateProductRequestValidator>();
+            builder.Services.AddSingleton<IValidator<ChangePriceRequest>, ChangePriceRequestValidator>();
             builder.Services.AddSingleton<IProductRepository, InMemoryProductRepository>();
             builder.Services.AddScoped<GetProductsHandler>();
             builder.Services.AddScoped<GetProductByIdHandler>();
             builder.Services.AddScoped<CreateProductHandler>();
+            builder.Services.AddScoped<ChangePriceHandler>();
 
             var app = builder.Build();
 

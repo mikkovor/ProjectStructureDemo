@@ -1,11 +1,13 @@
-namespace DemoApp.VerticalSlices.SingleFile.Products;
+using DemoApp.VerticalSlices.Domain;
 
-public sealed class InMemoryProductRepository : IProductRepository
+namespace DemoApp.VerticalSlices.Data;
+
+public sealed class ProductStore
 {
     private readonly List<Product> _products =
     [
-        new() { Id = Guid.Parse("11111111-1111-1111-1111-111111111111"), Name = "Demo product", Price = 9.99m },
-        new() { Id = Guid.Parse("22222222-2222-2222-2222-222222222222"), Name = "Office chair", Price = 149.00m }
+        new(Guid.Parse("11111111-1111-1111-1111-111111111111"), "Demo product", 9.99m),
+        new(Guid.Parse("22222222-2222-2222-2222-222222222222"), "Office chair", 149.00m)
     ];
 
     private readonly Lock _lock = new();
@@ -39,16 +41,31 @@ public sealed class InMemoryProductRepository : IProductRepository
         }
     }
 
-    public Task<Product> AddAsync(string name, decimal price, CancellationToken cancellationToken)
+    public Task AddAsync(Product product, CancellationToken cancellationToken)
     {
-        var product = new Product { Id = Guid.NewGuid(), Name = name, Price = price };
         lock (_lock)
         {
-            _products.Add(product);
+            _products.Add(Copy(product));
         }
 
-        return Task.FromResult(Copy(product));
+        return Task.CompletedTask;
     }
 
-    private static Product Copy(Product p) => new() { Id = p.Id, Name = p.Name, Price = p.Price };
+    public Task UpdateAsync(Product product, CancellationToken cancellationToken)
+    {
+        lock (_lock)
+        {
+            var index = _products.FindIndex(p => p.Id == product.Id);
+            if (index < 0)
+            {
+                throw new InvalidOperationException($"Product {product.Id} does not exist.");
+            }
+
+            _products[index] = Copy(product);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private static Product Copy(Product p) => new(p.Id, p.Name, p.Price);
 }

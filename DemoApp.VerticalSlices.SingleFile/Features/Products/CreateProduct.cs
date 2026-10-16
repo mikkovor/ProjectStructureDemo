@@ -1,4 +1,5 @@
-using DemoApp.VerticalSlices.SingleFile.Products;
+using DemoApp.VerticalSlices.SingleFile.Data;
+using DemoApp.VerticalSlices.SingleFile.Domain;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -14,27 +15,21 @@ public static class CreateProduct
     {
         public Validator()
         {
-            RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
+            RuleFor(x => x.Name).NotEmpty().MaximumLength(Product.MaxNameLength);
             RuleFor(x => x.Price).GreaterThan(0);
         }
     }
 
-    public static void MapCreateProduct(this IEndpointRouteBuilder app) =>
-        app.MapPost("/products", HandleAsync).WithName("CreateProduct");
+    public static void MapCreateProduct(this IEndpointRouteBuilder group) =>
+        group.MapPost("/", HandleAsync).WithName("CreateProduct");
 
-    private static async Task<Results<CreatedAtRoute<Response>, ValidationProblem>> HandleAsync(
+    private static async Task<CreatedAtRoute<Response>> HandleAsync(
         Request request,
-        IValidator<Request> validator,
-        IProductRepository repository,
+        ProductStore store,
         CancellationToken cancellationToken)
     {
-        var validation = await validator.ValidateAsync(request, cancellationToken);
-        if (!validation.IsValid)
-        {
-            return TypedResults.ValidationProblem(validation.ToDictionary());
-        }
-
-        var product = await repository.AddAsync(request.Name, request.Price, cancellationToken);
+        var product = Product.Create(request.Name, request.Price);
+        await store.AddAsync(product, cancellationToken);
         var response = new Response(product.Id, product.Name, product.Price);
         return TypedResults.CreatedAtRoute(response, GetProductById.EndpointName, new { id = product.Id });
     }

@@ -1,7 +1,8 @@
+using DemoApp.VerticalSlices.Data;
+using DemoApp.VerticalSlices.Features.Products;
+using DemoApp.VerticalSlices.Features.Products.ChangePrice;
 using DemoApp.VerticalSlices.Features.Products.CreateProduct;
-using DemoApp.VerticalSlices.Features.Products.GetProductById;
 using DemoApp.VerticalSlices.Features.Products.GetProducts;
-using DemoApp.VerticalSlices.Products;
 using FluentValidation;
 
 namespace DemoApp.VerticalSlices
@@ -15,7 +16,8 @@ namespace DemoApp.VerticalSlices
             builder.Services.AddOpenApi();
             builder.Services.AddSingleton<IValidator<GetProductsRequest>, GetProductsValidator>();
             builder.Services.AddSingleton<IValidator<CreateProductRequest>, CreateProductValidator>();
-            builder.Services.AddSingleton<IProductRepository, InMemoryProductRepository>();
+            builder.Services.AddSingleton<IValidator<ChangePriceRequest>, ChangePriceValidator>();
+            builder.Services.AddSingleton<ProductStore>();
 
             var app = builder.Build();
 
@@ -26,9 +28,7 @@ namespace DemoApp.VerticalSlices
 
             app.UseHttpsRedirection();
 
-            app.MapGetProducts();
-            app.MapGetProductById();
-            app.MapCreateProduct();
+            app.MapProductEndpoints();
 
             app.Run();
         }

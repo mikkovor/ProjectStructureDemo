@@ -1,5 +1,5 @@
+using DemoApp.VerticalSlices.SingleFile.Data;
 using DemoApp.VerticalSlices.SingleFile.Features.Products;
-using DemoApp.VerticalSlices.SingleFile.Products;
 using FluentValidation;
 
 namespace DemoApp.VerticalSlices.SingleFile
@@ -13,7 +13,8 @@ namespace DemoApp.VerticalSlices.SingleFile
             builder.Services.AddOpenApi();
             builder.Services.AddSingleton<IValidator<GetProducts.Query>, GetProducts.Validator>();
             builder.Services.AddSingleton<IValidator<CreateProduct.Request>, CreateProduct.Validator>();
-            builder.Services.AddSingleton<IProductRepository, InMemoryProductRepository>();
+            builder.Services.AddSingleton<IValidator<ChangePrice.Request>, ChangePrice.Validator>();
+            builder.Services.AddSingleton<ProductStore>();
 
             var app = builder.Build();
 
@@ -24,9 +25,7 @@ namespace DemoApp.VerticalSlices.SingleFile
 
             app.UseHttpsRedirection();
 
-            app.MapGetProducts();
-            app.MapGetProductById();
-            app.MapCreateProduct();
+            app.MapProductEndpoints();
 
             app.Run();
         }

@@ -1,4 +1,4 @@
-using DemoApp.VerticalSlices.SingleFile.Products;
+using DemoApp.VerticalSlices.SingleFile.Data;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -19,22 +19,15 @@ public static class GetProducts
         }
     }
 
-    public static void MapGetProducts(this IEndpointRouteBuilder app) =>
-        app.MapGet("/products", HandleAsync).WithName("GetProducts");
+    public static void MapGetProducts(this IEndpointRouteBuilder group) =>
+        group.MapGet("/", HandleAsync).WithName("GetProducts");
 
-    private static async Task<Results<Ok<IReadOnlyList<Response>>, ValidationProblem>> HandleAsync(
+    private static async Task<Ok<IReadOnlyList<Response>>> HandleAsync(
         [AsParameters] Query query,
-        IValidator<Query> validator,
-        IProductRepository repository,
+        ProductStore store,
         CancellationToken cancellationToken)
     {
-        var validation = await validator.ValidateAsync(query, cancellationToken);
-        if (!validation.IsValid)
-        {
-            return TypedResults.ValidationProblem(validation.ToDictionary());
-        }
-
-        var products = await repository.GetAllAsync(query.Search, query.PageSize, cancellationToken);
+        var products = await store.GetAllAsync(query.Search, query.PageSize, cancellationToken);
         IReadOnlyList<Response> response = products
             .Select(p => new Response(p.Id, p.Name, p.Price))
             .ToList();

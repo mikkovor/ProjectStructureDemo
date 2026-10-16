@@ -1,4 +1,4 @@
-using DemoApp.VerticalSlices.SingleFile.Products;
+using DemoApp.VerticalSlices.SingleFile.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace DemoApp.VerticalSlices.SingleFile.Features.Products;
@@ -9,13 +9,13 @@ public static class GetProductById
 
     public sealed record Response(Guid Id, string Name, decimal Price);
 
-    public static void MapGetProductById(this IEndpointRouteBuilder app) =>
-        app.MapGet("/products/{id:guid}", HandleAsync).WithName(EndpointName);
+    public static void MapGetProductById(this IEndpointRouteBuilder group) =>
+        group.MapGet("/{id:guid}", HandleAsync).WithName(EndpointName);
 
     private static async Task<Results<Ok<Response>, NotFound>> HandleAsync(
-        Guid id, IProductRepository repository, CancellationToken cancellationToken)
+        Guid id, ProductStore store, CancellationToken cancellationToken)
     {
-        var product = await repository.GetByIdAsync(id, cancellationToken);
+        var product = await store.GetByIdAsync(id, cancellationToken);
         return product is null
             ? TypedResults.NotFound()
             : TypedResults.Ok(new Response(product.Id, product.Name, product.Price));

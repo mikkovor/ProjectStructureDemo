@@ -55,6 +55,33 @@ public static class ProductApiContract
         var afterCreate = await client.GetFromJsonAsync<List<ProductResponse>>("/products");
         Assert.Equal(3, afterCreate!.Count);
         Assert.Contains(createdProduct, afterCreate);
+
+        await AssertChangePriceAsync(client);
+    }
+
+    private static async Task AssertChangePriceAsync(HttpClient client)
+    {
+        var url = $"/products/{ChairId}/price";
+
+        // Exactly +50% (149.00 -> 223.50) is allowed.
+        var raised = await client.PutAsJsonAsync(url, new { price = 223.50m });
+        Assert.Equal(HttpStatusCode.OK, raised.StatusCode);
+        Assert.Equal(new ProductResponse(ChairId, "Office chair", 223.50m), await raised.Content.ReadFromJsonAsync<ProductResponse>());
+
+        // More than +50% violates the business rule and changes nothing.
+        var tooLarge = await client.PutAsJsonAsync(url, new { price = 335.26m });
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, tooLarge.StatusCode);
+        Assert.Equal(223.50m, (await client.GetFromJsonAsync<ProductResponse>($"/products/{ChairId}"))!.Price);
+
+        var lowered = await client.PutAsJsonAsync(url, new { price = 100m });
+        Assert.Equal(HttpStatusCode.OK, lowered.StatusCode);
+        Assert.Equal(100m, (await client.GetFromJsonAsync<ProductResponse>($"/products/{ChairId}"))!.Price);
+
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PutAsJsonAsync("/products/ffffffff-ffff-ffff-ffff-ffffffffffff/price", new { price = 10m })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PutAsJsonAsync(url, new { price = 0m })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PutAsJsonAsync(url, new { })).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PutAsync(url, new StringContent("{", Encoding.UTF8, "application/json"))).StatusCode);
+        Assert.Equal(100m, (await client.GetFromJsonAsync<ProductResponse>($"/products/{ChairId}"))!.Price);
     }
 
     private static async Task AssertInvalidPostsCreateNothingAsync(HttpClient client)
