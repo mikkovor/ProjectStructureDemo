@@ -1,41 +1,40 @@
-var builder = WebApplication.CreateBuilder(args);
+using DemoApp.CleanArchitecture.Api.Endpoints;
+using DemoApp.CleanArchitecture.Api.Requests;
+using DemoApp.CleanArchitecture.Application.Abstractions;
+using DemoApp.CleanArchitecture.Application.Products.CreateProduct;
+using DemoApp.CleanArchitecture.Application.Products.GetProductById;
+using DemoApp.CleanArchitecture.Application.Products.GetProducts;
+using DemoApp.CleanArchitecture.Infrastructure.Products;
+using FluentValidation;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+namespace DemoApp.CleanArchitecture.Api
 {
-    app.MapOpenApi();
-}
+    public partial class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
 
-app.UseHttpsRedirection();
+            builder.Services.AddOpenApi();
+            builder.Services.AddSingleton<IValidator<GetProductsRequest>, GetProductsRequestValidator>();
+            builder.Services.AddSingleton<IValidator<CreateProductRequest>, CreateProductRequestValidator>();
+            builder.Services.AddSingleton<IProductRepository, InMemoryProductRepository>();
+            builder.Services.AddScoped<GetProductsHandler>();
+            builder.Services.AddScoped<GetProductByIdHandler>();
+            builder.Services.AddScoped<CreateProductHandler>();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+            var app = builder.Build();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapOpenApi();
+            }
 
-app.Run();
+            app.UseHttpsRedirection();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+            app.MapProducts();
+
+            app.Run();
+        }
+    }
 }
